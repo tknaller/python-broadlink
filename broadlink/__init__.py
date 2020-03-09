@@ -119,8 +119,11 @@ def discover(timeout=None, local_ip_address=None, discover_ip_address='255.255.2
     checksum = adler32(packet, 0xbeaf) & 0xffff
     packet[0x20] = checksum & 0xff
     packet[0x21] = checksum >> 8
-
-    cs.sendto(packet, (discover_ip_address, 80))
+    print("discip")
+    print(discover_ip_address)
+    print("packet")
+    print(packet)
+    cs.sendto(bytes(packet), (discover_ip_address, 80))
     if timeout is None:
         response = cs.recvfrom(1024)
         responsepacket = bytearray(response[0])
@@ -152,8 +155,8 @@ class device:
         self.devtype = devtype if devtype is not None else 0x272a
         self.timeout = timeout
         self.count = random.randrange(0xffff)
-        self.iv = bytearray(
-            [0x56, 0x2e, 0x17, 0x99, 0x6d, 0x09, 0x3d, 0x28, 0xdd, 0xb3, 0xba, 0x69, 0x5a, 0x2e, 0x6f, 0x58])
+        self.iv = bytes(bytearray(
+            [0x56, 0x2e, 0x17, 0x99, 0x6d, 0x09, 0x3d, 0x28, 0xdd, 0xb3, 0xba, 0x69, 0x5a, 0x2e, 0x6f, 0x58]))
         self.id = bytearray([0, 0, 0, 0])
         self.cs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.cs.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -163,8 +166,8 @@ class device:
         self.lock = threading.Lock()
 
         self.aes = None
-        key = bytearray(
-            [0x09, 0x76, 0x28, 0x34, 0x3f, 0xe9, 0x9e, 0x23, 0x76, 0x5c, 0x15, 0x13, 0xac, 0xcf, 0x8b, 0x02])
+        key = bytes(bytearray(
+            [0x09, 0x76, 0x28, 0x34, 0x3f, 0xe9, 0x9e, 0x23, 0x76, 0x5c, 0x15, 0x13, 0xac, 0xcf, 0x8b, 0x02]))
         self.update_aes(key)
 
     def update_aes(self, key):
@@ -173,11 +176,11 @@ class device:
 
     def encrypt(self, payload):
         encryptor = self.aes.encryptor()
-        return encryptor.update(payload) + encryptor.finalize()
+        return encryptor.update(bytes(payload)) + encryptor.finalize()
 
     def decrypt(self, payload):
         decryptor = self.aes.decryptor()
-        return decryptor.update(payload) + decryptor.finalize()
+        return decryptor.update(bytes(payload)) + decryptor.finalize()
 
     def auth(self):
         payload = bytearray(0x50)
