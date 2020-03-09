@@ -119,10 +119,7 @@ def discover(timeout=None, local_ip_address=None, discover_ip_address='255.255.2
     checksum = adler32(packet, 0xbeaf) & 0xffff
     packet[0x20] = checksum & 0xff
     packet[0x21] = checksum >> 8
-    print("discip")
-    print(discover_ip_address)
-    print("packet")
-    print(packet)
+
     cs.sendto(bytes(packet), (discover_ip_address, 80))
     if timeout is None:
         response = cs.recvfrom(1024)
